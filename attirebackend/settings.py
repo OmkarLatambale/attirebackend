@@ -30,7 +30,7 @@ SECRET_KEY = 'django-insecure-x1h&xyu2*(-v_qh568@5gv5*7+zzh8&#10$13gb36ee_@s*$ll
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -62,8 +62,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5174",
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
-    "https://attire-ai.netlify.app"
-    "https://visionattire.tjdem.online"
+    "https://attire-ai.netlify.app",
+    "https://visionattire.tjdem.online",
 
 ]
 
