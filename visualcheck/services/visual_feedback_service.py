@@ -102,50 +102,47 @@ def analyze_frames_aggregated(
     )
 
     # --- UPDATED PROMPT FOR GROOMING / CLOTHES / SHOES ---
-    prompt = f"""
-You are analyzing {len(valid_images)} photos of {candidate_display} taken before an interview.
-One is usually an upper-body selfie and one is a full-body photo.
+        # --- UPDATED PROMPT FOR TABLE-FRIENDLY JSON + LOGO CHECK ---
+    prompt = """
+You are analyzing photos of a shop promoter.
+Your job is to evaluate the candidate’s readiness for professional workplace attire.
 
-Your job is to evaluate if the candidate is visually ready for a **formal job interview**.
+Also check the logo text on the T-shirt/uniform and see if it matches
+the company name "First Meridian".
 
-⚙️ INSTRUCTIONS (VERY IMPORTANT):
-- Use **simple, clear language**.
-- Use **bullet points** in the arrays.
-- Each point should be **10–18 words**, short and focused.
-- Be **honest but polite** and constructive.
-- Focus specifically on: facial grooming, clothing, clothing style/formality, and shoes.
+Return ONLY valid JSON with this structure (keys must match exactly):
 
-Analyze and return feedback under these EXACT categories:
-
-1. FACIAL GROOMING
-   - Hair neatness, beard/moustache trimming, face cleanliness, overall grooming of face and head.
-
-2. CLOTHING & APPEARANCE
-   - Type of clothes (shirt, t-shirt, blazer, etc.), neatness, wrinkles, color choices, overall impression.
-
-3. CLOTHING STYLE & FORMALITY
-   - How formal the outfit looks (casual, semi-formal, formal), suitability for a professional interview.
-
-4. FOOTWEAR / SHOES
-   - Type of shoes (formal shoes, sneakers, sandals, slippers, no shoes visible), cleanliness, appropriateness.
-
-5. OVERALL SUMMARY & RECOMMENDATION
-   - Short summary sentence and recommended level:
-     - "proper_interview_attire" (good for interview)
-     - "needs_minor_improvement"
-     - "not_appropriate_for_interview"
-
-Return ONLY valid JSON with these exact keys:
-
-{{
-  "facial_grooming": ["• point 1", "• point 2", "..."],
-  "clothing_appearance": ["• point 1", "• point 2", "..."],
-  "clothing_style_formality": ["• point 1", "• point 2", "..."],
-  "footwear_shoes": ["• point 1", "• point 2", "..."],
-  "overall_summary": "one short sentence summarizing readiness",
+{
+  "facial_grooming": {
+    "Hair Style": "value",
+    "Beard": "value",
+    "Face Cleanliness": "value"
+  },
+  "clothing_appearance": {
+    "Outfit Type": "value",
+    "Neatness": "value",
+    "Color Choice": "value"
+  },
+  "clothing_style_formality": {
+    "Formality Level": "formal|semi-formal|casual",
+    "Overall Impression": "value"
+  },
+  "footwear_shoes": {
+    "Footwear Type": "value",
+    "Cleanliness": "value",
+    "Appropriateness": "value"
+  },
+  "uniform_logo": {
+    "detected_logo_text": "value",
+    "match_status": "match_found|no_match|no_logo_detected",
+    "match_confidence": "high|medium|low"
+  },
+  "overall_summary": "Short 1-line summary",
   "attire_recommendation": "proper_interview_attire | needs_minor_improvement | not_appropriate_for_interview"
-}}
+}
 """
+
+
 
     try:
         # Build message content with all images
