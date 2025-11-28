@@ -140,7 +140,8 @@ Return ONLY valid JSON with this structure (keys must match exactly):
     "Appropriateness": "value"
   },
   "uniform_logo": {
-    "match_status": "match_found|no_logo_detected"
+    "detected_logo_text": "brand name or short description like 'Samsung' or 'logo unclear' or 'no logo'",
+    "match_status": "match_found|no_logo_detected",
   },
   "overall_summary": "Short 1-line summary",
   "attire_recommendation": "proper_interview_attire | needs_minor_improvement | not_appropriate_for_interview"
