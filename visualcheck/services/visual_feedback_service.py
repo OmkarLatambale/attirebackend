@@ -103,12 +103,19 @@ def analyze_frames_aggregated(
 
     # --- UPDATED PROMPT FOR GROOMING / CLOTHES / SHOES ---
         # --- UPDATED PROMPT FOR TABLE-FRIENDLY JSON + LOGO CHECK ---
+        # --- PROMPT FOR TABLE-FRIENDLY JSON + GENERIC LOGO CHECK ---
     prompt = """
 You are analyzing photos of a shop promoter.
 Your job is to evaluate the candidate’s readiness for professional workplace attire.
 
-Also check the logo text on the T-shirt/uniform and see if it matches
-the company name "First Meridian".
+You should ALSO carefully check if there is any visible BRAND LOGO on the
+T-shirt / shirt / jacket / uniform (for example: Samsung, Apple, Nike, etc.).
+
+You do NOT need to match any specific company name.
+You only need to decide:
+- Does any logo or brand mark seem to be present on the upper clothing?
+- If yes, try to read the text (e.g., "Samsung") if it is visible.
+- If not sure, treat it as "no_logo_detected".
 
 Return ONLY valid JSON with this structure (keys must match exactly):
 
@@ -133,13 +140,22 @@ Return ONLY valid JSON with this structure (keys must match exactly):
     "Appropriateness": "value"
   },
   "uniform_logo": {
-    "detected_logo_text": "value",
-    "match_status": "match_found|no_match|no_logo_detected",
+    "detected_logo_text": "brand name or short description like 'Samsung' or 'logo unclear' or 'no logo'",
+    "match_status": "match_found|no_logo_detected",
     "match_confidence": "high|medium|low"
   },
   "overall_summary": "Short 1-line summary",
   "attire_recommendation": "proper_interview_attire | needs_minor_improvement | not_appropriate_for_interview"
 }
+
+Rules for the logo section:
+- Set match_status to "match_found" if you clearly see ANY logo or brand mark
+  on the T-shirt / shirt / jacket / uniform.
+- Set match_status to "no_logo_detected" if you do not see a clear logo
+  (plain clothing, or very unclear mark).
+- detected_logo_text should be the brand text if readable (e.g., "Samsung"),
+  otherwise "logo unclear" or "no logo".
+- match_confidence is your confidence in whether a logo exists.
 """
 
 
