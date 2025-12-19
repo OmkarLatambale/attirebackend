@@ -30,9 +30,9 @@ SECRET_KEY = 'django-insecure-x1h&xyu2*(-v_qh568@5gv5*7+zzh8&#10$13gb36ee_@s*$ll
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['visionattire.tjdem.online', 'www.visionattire.tjdem.online', 'localhost', '127.0.0.1']
+# ALLOWED_HOSTS = ['visionattire.tjdem.online', 'www.visionattire.tjdem.online', 'localhost', '127.0.0.1']
 
-
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     "visualcheck",
     "corsheaders",      # 👈 add this
+     "storages",
 ]
 
 MIDDLEWARE = [
@@ -94,10 +95,18 @@ WSGI_APPLICATION = 'attirebackend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'attire_db_5w7g',
+        'USER': 'attire_db',
+        'PASSWORD': 'XgzgnfzVwOGGBAyojGjMjeT9wpUqK4j3',
+        'HOST': 'dpg-d52fgvf5r7bs73a4qo6g-a.singapore-postgres.render.com',
+        'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'require',  # REQUIRED for Render PostgreSQL
+        }
     }
 }
+
 
 
 # Password validation
@@ -140,3 +149,24 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+# =======================
+# AWS S3 CONFIGURATION
+# =======================
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+AWS_STORAGE_BUCKET_NAME = os.getenv("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "ap-south-1")
+
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+AWS_QUERYSTRING_AUTH = False
+
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com"
+
+
+MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/"
