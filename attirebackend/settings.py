@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x1h&xyu2*(-v_qh568@5gv5*7+zzh8&#10$13gb36ee_@s*$ll'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # ALLOWED_HOSTS = ['visionattire.tjdem.online', 'www.visionattire.tjdem.online', 'localhost', '127.0.0.1']
 
