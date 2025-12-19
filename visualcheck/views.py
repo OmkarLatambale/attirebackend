@@ -1,7 +1,7 @@
 import base64
 from typing import Any
 from .utils.s3_upload import upload_bytes_to_s3
-
+from django.contrib.auth import authenticate, login, logout
 from django.http import JsonResponse, HttpRequest
 from django.views import View
 from django.utils.decorators import method_decorator
@@ -11,6 +11,17 @@ from .models import Employee, Attendance
 from .services.visual_feedback_service import analyze_attire_from_two_images
 from django.utils.timezone import now
 from .models import Employee, Attendance
+import json
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
 
 def bytes_to_base64(file_bytes: bytes) -> str:
     return base64.b64encode(file_bytes).decode("utf-8")
@@ -125,32 +136,48 @@ class DailyAttendanceView(View):
 
         return JsonResponse(list(records), safe=False)
 
-
-
-class AdminVerifyAttendanceView(View):
+class AdminVerifyAttendanceView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, attendance_id):
-        action = request.POST.get("action")  # approve / reject
-        admin_name = request.POST.get("admin_name")
 
-        attendance = Attendance.objects.get(id=attendance_id)
+        if not request.user.is_staff:
+            return Response(
+                {"error": "Admin access only"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        action = request.data.get("action")
+
+        if action not in ["approve", "reject"]:
+            return Response({"error": "Invalid action"}, status=400)
+
+        try:
+            attendance = Attendance.objects.get(id=attendance_id)
+        except Attendance.DoesNotExist:
+            return Response({"error": "Attendance not found"}, status=404)
 
         if attendance.status != "PENDING_ADMIN":
-            return JsonResponse({"error": "Already verified"}, status=400)
+            return Response({"error": "Already verified"}, status=400)
 
-        if action == "approve":
-            attendance.status = "ADMIN_VERIFIED"
-        else:
-            attendance.status = "REJECTED"
+        attendance.status = (
+            "ADMIN_VERIFIED" if action == "approve" else "REJECTED"
+        )
 
-        attendance.verified_by = admin_name
+        attendance.verified_by = request.user.username
         attendance.verified_at = now()
         attendance.save()
 
-        return JsonResponse({"status": attendance.status})
-
-
-
+        return Response({
+            "status": attendance.status,
+            "verified_by": attendance.verified_by,
+            "verified_at": attendance.verified_at.strftime("%Y-%m-%d %H:%M:%S")
+        })
+     
+        
+        
+        
 #================ admin  check pending Employee
 
 class AdminPendingAttendanceView(View):
@@ -198,8 +225,54 @@ class AdminVerifiedAttendanceView(View):
                 "punch_time": str(a.punch_time),
                 "location": a.location_text,
                 "verified_by": a.verified_by,
+                 "upper_body_image": a.upper_body_image_url,
+                "full_body_image": a.full_body_image_url,
                 "verified_at": str(a.verified_at),
                 "status": a.status
             })
 
         return JsonResponse(data, safe=False)
+
+
+
+
+
+class AdminLoginJWTView(APIView):
+
+    def post(self, request):
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+            return Response(
+                {"error": "username and password required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return Response(
+                {"error": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.is_staff:
+            return Response(
+                {"error": "Admin access only"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "status": "success",
+            "admin": {
+                "username": user.username,
+                "is_superuser": user.is_superuser
+            },
+            "tokens": {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh)
+            }
+        })
